@@ -2,47 +2,43 @@ steps:
 
 # ✅ Build Docker Image
 - name: 'gcr.io/cloud-builders/docker'
-  args: [
-    'build',
-    '-t',
-    'us-central1-docker.pkg.dev/$PROJECT_ID/my-repo/app:$COMMIT_SHA',
-    '.'
-  ]
+  args:
+    - 'build'
+    - '-t'
+    - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repo/app:$COMMIT_SHA'
+    - '.'
 
-# ✅ Push Image to Artifact Registry
+# ✅ Push Image
 - name: 'gcr.io/cloud-builders/docker'
-  args: [
-    'push',
-    'us-central1-docker.pkg.dev/$PROJECT_ID/my-repo/app:$COMMIT_SHA'
-  ]
+  args:
+    - 'push'
+    - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repo/app:$COMMIT_SHA'
 
-# ✅ Create New Instance Template
+# ✅ Deployment Step (Template + MIG Update)
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: bash
   args:
     - -c
     - |
       gcloud compute instance-templates create app-template-$COMMIT_SHA \
-      --machine-type=e2-medium \
-      --image-family=cos-stable \
-      --image-project=cos-cloud \
-      --tags=http-server \
-      --metadata=startup-script='#! /bin/bash
-      docker run -d -p 80:8080 us-central1-docker.pkg.dev/'"$PROJECT_ID"'/my-repo/app:'"$COMMIT_SHA"
+        --machine-type=e2-medium \
+        --image-family=cos-stable \
+        --image-project=cos-cloud \
+        --tags=http-server \
+        --metadata=startup-script='#! /bin/bash
+        docker run -d -p 80:8080 us-central1-docker.pkg.dev/'"$PROJECT_ID"'/my-repo/app:'"$COMMIT_SHA"' && \
 
-# ✅ Update MIG Template
       gcloud compute instance-groups managed set-instance-template app-mig \
-      --template=app-template-$COMMIT_SHA \
-      --zone=us-central1-a
+        --template=app-template-$COMMIT_SHA \
+        --zone=us-central1-a && \
 
-# ✅ Rolling Update (ZERO DOWNTIME)
       gcloud compute instance-groups managed rolling-action start-update app-mig \
-      --zone=us-central1-a \
-      --max-unavailable=1 \
-      --max-surge=1
+        --zone=us-central1-a \
+        --max-unavailable=1 \
+        --max-surge=1
 
 images:
-- 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repo/app:$COMMIT_SHA'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-repo/app:$COMMIT_SHA'
 
 options:
   logging: CLOUD_LOGGING_ONLY
