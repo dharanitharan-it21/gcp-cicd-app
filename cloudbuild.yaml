@@ -25,8 +25,9 @@ steps:
         --image-family=cos-stable \
         --image-project=cos-cloud \
         --tags=http-server \
-        --metadata=startup-script='#! /bin/bash
-        docker run -d -p 80:8080 us-central1-docker.pkg.dev/'"$PROJECT_ID"'/my-repo/app:'"$COMMIT_SHA"' && \
+       --metadata=startup-script='#! /bin/bash
+sudo systemctl start docker
+sudo docker run -d -p 80:8080 us-central1-docker.pkg.dev/'"$PROJECT_ID"'/my-repo/app:'"$COMMIT_SHA"
 
       gcloud compute instance-groups managed set-instance-template app-mig \
         --template=app-template-$COMMIT_SHA \
