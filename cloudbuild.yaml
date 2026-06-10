@@ -2,7 +2,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build',
-      '-t',
+      '-t', 
       'asia-south1-docker.pkg.dev/project-00e22bdf-cb5f-4e38-830/my-app-repo/my-app-image:latest',
       '.'
     ]
