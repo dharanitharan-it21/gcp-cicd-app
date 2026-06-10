@@ -1,6 +1,6 @@
 steps:
 
-# ✅ Build Docker 
+# ✅ Build Docker
 - name: 'gcr.io/cloud-builders/docker'
   args:
     - 'build'
